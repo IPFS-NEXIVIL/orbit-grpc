@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package contents;
+
+option go_package = "go_package/contentpb";
+
+service Nexivil{
+    rpc ListContents (ContentRequest) returns (stream ContentResponse) {};
+}
+
+message ContentRequest {
+    string project_name = 1;
+}
+
+message ContentResponse {
+    string project_name = 1;
+    string content = 2;
+}
