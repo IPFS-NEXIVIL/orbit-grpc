@@ -221,8 +221,9 @@ proto.contents.ContentResponse.prototype.toObject = function(opt_includeInstance
  */
 proto.contents.ContentResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    projectName: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    content: jspb.Message.getFieldWithDefault(msg, 2, "")
+    id: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    projectName: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    content: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -260,10 +261,14 @@ proto.contents.ContentResponse.deserializeBinaryFromReader = function(msg, reade
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setId(value);
+      break;
+    case 2:
       var value = /** @type {string} */ (reader.readString());
       msg.setProjectName(value);
       break;
-    case 2:
+    case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.setContent(value);
       break;
@@ -296,46 +301,53 @@ proto.contents.ContentResponse.prototype.serializeBinary = function() {
  */
 proto.contents.ContentResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getProjectName();
-  if (f.length > 0) {
-    writer.writeString(
+  f = message.getId();
+  if (f !== 0) {
+    writer.writeInt32(
       1,
       f
     );
   }
-  f = message.getContent();
+  f = message.getProjectName();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
+  f = message.getContent();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
 };
 
 
 /**
- * optional string project_name = 1;
+ * optional int32 id = 1;
+ * @return {number}
+ */
+proto.contents.ContentResponse.prototype.getId = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.contents.ContentResponse} returns this
+ */
+proto.contents.ContentResponse.prototype.setId = function(value) {
+  return jspb.Message.setProto3IntField(this, 1, value);
+};
+
+
+/**
+ * optional string project_name = 2;
  * @return {string}
  */
 proto.contents.ContentResponse.prototype.getProjectName = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.contents.ContentResponse} returns this
- */
-proto.contents.ContentResponse.prototype.setProjectName = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional string content = 2;
- * @return {string}
- */
-proto.contents.ContentResponse.prototype.getContent = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -344,8 +356,26 @@ proto.contents.ContentResponse.prototype.getContent = function() {
  * @param {string} value
  * @return {!proto.contents.ContentResponse} returns this
  */
-proto.contents.ContentResponse.prototype.setContent = function(value) {
+proto.contents.ContentResponse.prototype.setProjectName = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string content = 3;
+ * @return {string}
+ */
+proto.contents.ContentResponse.prototype.getContent = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.contents.ContentResponse} returns this
+ */
+proto.contents.ContentResponse.prototype.setContent = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
