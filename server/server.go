@@ -74,32 +74,32 @@ var exampleData = []byte(`[
 	{
 		"id": 3,
 		"project_name": "blue",
-		"content": "Ex exercitation officia exercitation exercitation Lorem. Ea laboris occaecat aliquip nulla minim duis. Anim exercitation irure commodo irure non. Lorem aliquip minim sit est sint id qui quis sit ipsum reprehenderit Lorem aute cupidatat.\r\n"
+		"content": "대통령의 임기연장 또는 중임변경을 위한 헌법개정은 그 헌법개정 제안 당시의 대통령에 대하여는 효력이 없다. 국교는 인정되지 아니하며, 종교와 정치는 분리된다.\r\n"
 	  },
 	  {
 		"id": 4,
 		"project_name": "brown",
-		"content": "Esse veniam ullamco pariatur aute cillum fugiat id sit ea irure anim. Culpa magna magna qui magna qui ex laboris sint sunt qui excepteur id. Adipisicing magna pariatur pariatur deserunt nulla labore laboris commodo cupidatat adipisicing. Esse ad ullamco est dolor enim ex irure quis minim pariatur qui nulla. Ex aliqua sit ut ea. Pariatur fugiat nostrud occaecat adipisicing culpa incididunt ea.\r\n"
+		"content": "감사원의 조직·직무범위·감사위원의 자격·감사대상공무원의 범위 기타 필요한 사항은 법률로 정한다. 국가는 지역간의 균형있는 발전을 위하여 지역경제를 육성할 의무를 진다.\r\n"
 	  },
 	  {
 		"id": 5,
 		"project_name": "brown",
-		"content": "Elit consequat incididunt nisi cillum aliquip do consectetur magna sunt irure mollit. Laborum aliquip ea do laboris reprehenderit ut aliqua cupidatat. Exercitation commodo do est do Lorem adipisicing nulla commodo aliquip deserunt non exercitation ad eu. In occaecat anim dolor exercitation ea irure magna. Proident officia magna adipisicing ut occaecat. Ad adipisicing dolore ea do cupidatat magna ea qui eiusmod nulla consectetur labore.\r\n"
+		"content": "대통령이 궐위되거나 사고로 인하여 직무를 수행할 수 없을 때에는 국무총리, 법률이 정한 국무위원의 순서로 그 권한을 대행한다. 모든 국민은 인간으로서의 존엄과 가치를 가지며, 행복을 추구할 권리를 가진다. 국가는 개인이 가지는 불가침의 기본적 인권을 확인하고 이를 보장할 의무를 진다.\r\n"
 	  },
 	  {
 		"id": 6,
 		"project_name": "brown",
-		"content": "Veniam labore ullamco in incididunt. Irure mollit laborum pariatur consequat id esse velit anim nulla occaecat. Eu velit sint ullamco consectetur proident enim voluptate.\r\n"
+		"content": "국회는 국무총리 또는 국무위원의 해임을 대통령에게 건의할 수 있다. 대통령의 국법상 행위는 문서로써 하며, 이 문서에는 국무총리와 관계 국무위원이 부서한다. 군사에 관한 것도 또한 같다.\r\n"
 	  },
 	  {
 		"id": 7,
 		"project_name": "green",
-		"content": "Veniam dolor laboris mollit eiusmod cupidatat in culpa ex quis aliqua pariatur eiusmod. Anim tempor cupidatat mollit culpa. Non proident dolore anim Lorem reprehenderit excepteur consectetur nostrud ullamco aliquip cupidatat incididunt.\r\n"
+		"content": "모든 국민은 학문과 예술의 자유를 가진다. 국가는 농·어민과 중소기업의 자조조직을 육성하여야 하며, 그 자율적 활동과 발전을 보장한다. 헌법개정은 국회재적의원 과반수 또는 대통령의 발의로 제안된다.\r\n"
 	  },
 	  {
 		"id": 8,
 		"project_name": "blue",
-		"content": "Labore dolor nostrud labore voluptate aliqua. Veniam fugiat eu ea exercitation id eiusmod ad commodo commodo mollit irure Lorem. Esse non ut ex eu occaecat irure ad esse.\r\n"
+		"content": "법관은 헌법과 법률에 의하여 그 양심에 따라 독립하여 심판한다. 위원은 정당에 가입하거나 정치에 관여할 수 없다. 언론·출판은 타인의 명예나 권리 또는 공중도덕이나 사회윤리를 침해하여서는 아니된다. 언론·출판이 타인의 명예나 권리를 침해한 때에는 피해자는 이에 대한 피해의 배상을 청구할 수 있다.\r\n"
 	  },
 	  {
 		"id": 9,

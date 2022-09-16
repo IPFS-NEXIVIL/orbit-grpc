@@ -7,7 +7,8 @@ var client = new NexivilClient('http://localhost:8000')
 
 function App() {
 
-  const [projectName, setProjectName] = useState([])
+  const contentList = []
+
   const [contents, setContents] = useState([]);
 
   const GetNexivilContent = () => {
@@ -15,23 +16,28 @@ function App() {
     contentRequest.setProjectName("blue");
     var stream = client.listContents(contentRequest,{});
 
-    console.log(stream);
-
     stream.on('data', function(response) {
       console.log("stream")
-      console.log(response.getContent())
-      setProjectName([...projectName, response.getProjectName()])
-      setContents([...contents, response.getContent()])
+      contentList.push(response.getContent())
+      console.log(contentList)
+      setContents([...contents, contentList])
     });
+
+    console.log(contents)
 
     console.log("🌈");
 
-    // const listItem = contents.map((content) => <li key={content.id}>{content.project_name} 👩‍🎨 <br/> {content.content} </li>)
+    const contentItems = contents.map((content) =>
+      <li>{content}</li>
+    )
+
+    // useEffect(()=>{
+    //   GetNexivilContent()
+    // },[]);
 
     return (
       <div>
-        {projectName}<br/>
-        {contents}
+        {contentItems}
       </div>
     )
 
