@@ -13,7 +13,8 @@ message ContentRequest {
 }
 
 message ContentResponse {
-    int32 id = 1;
-    string project_name = 2;
-    string content = 3;
+    string id = 1;
+    string date = 2;
+    string project_name = 3;
+    string content = 4;
 }

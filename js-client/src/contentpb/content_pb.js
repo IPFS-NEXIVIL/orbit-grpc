@@ -221,9 +221,10 @@ proto.contents.ContentResponse.prototype.toObject = function(opt_includeInstance
  */
 proto.contents.ContentResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    projectName: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    content: jspb.Message.getFieldWithDefault(msg, 3, "")
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    date: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    projectName: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    content: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -261,14 +262,18 @@ proto.contents.ContentResponse.deserializeBinaryFromReader = function(msg, reade
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {number} */ (reader.readInt32());
+      var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.setProjectName(value);
+      msg.setDate(value);
       break;
     case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setProjectName(value);
+      break;
+    case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setContent(value);
       break;
@@ -302,23 +307,30 @@ proto.contents.ContentResponse.prototype.serializeBinary = function() {
 proto.contents.ContentResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
-  if (f !== 0) {
-    writer.writeInt32(
+  if (f.length > 0) {
+    writer.writeString(
       1,
       f
     );
   }
-  f = message.getProjectName();
+  f = message.getDate();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getContent();
+  f = message.getProjectName();
   if (f.length > 0) {
     writer.writeString(
       3,
+      f
+    );
+  }
+  f = message.getContent();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
       f
     );
   }
@@ -326,28 +338,28 @@ proto.contents.ContentResponse.serializeBinaryToWriter = function(message, write
 
 
 /**
- * optional int32 id = 1;
- * @return {number}
+ * optional string id = 1;
+ * @return {string}
  */
 proto.contents.ContentResponse.prototype.getId = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
- * @param {number} value
+ * @param {string} value
  * @return {!proto.contents.ContentResponse} returns this
  */
 proto.contents.ContentResponse.prototype.setId = function(value) {
-  return jspb.Message.setProto3IntField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
 /**
- * optional string project_name = 2;
+ * optional string date = 2;
  * @return {string}
  */
-proto.contents.ContentResponse.prototype.getProjectName = function() {
+proto.contents.ContentResponse.prototype.getDate = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -356,16 +368,16 @@ proto.contents.ContentResponse.prototype.getProjectName = function() {
  * @param {string} value
  * @return {!proto.contents.ContentResponse} returns this
  */
-proto.contents.ContentResponse.prototype.setProjectName = function(value) {
+proto.contents.ContentResponse.prototype.setDate = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
 /**
- * optional string content = 3;
+ * optional string project_name = 3;
  * @return {string}
  */
-proto.contents.ContentResponse.prototype.getContent = function() {
+proto.contents.ContentResponse.prototype.getProjectName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -374,8 +386,26 @@ proto.contents.ContentResponse.prototype.getContent = function() {
  * @param {string} value
  * @return {!proto.contents.ContentResponse} returns this
  */
-proto.contents.ContentResponse.prototype.setContent = function(value) {
+proto.contents.ContentResponse.prototype.setProjectName = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional string content = 4;
+ * @return {string}
+ */
+proto.contents.ContentResponse.prototype.getContent = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.contents.ContentResponse} returns this
+ */
+proto.contents.ContentResponse.prototype.setContent = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
