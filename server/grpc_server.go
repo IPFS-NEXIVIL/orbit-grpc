@@ -8,6 +8,7 @@ import (
 	"net"
 
 	"github.com/IPFS-NEXIVIL/orbit-grpc/server/contentpb"
+	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit"
 	"google.golang.org/grpc"
 )
 
@@ -42,6 +43,19 @@ func (s *server) loadContents(filePath string) {
 			log.Fatalf("Failed to load default contents: %v", err)
 		}
 	} else {
+		// Initialize and start the orbit db
+		db := orbit.StartOrbitDB()
+
+		// example = exampleData
+
+		// get all data from orbit db
+		orbitData, err := db.ListData()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("orbit data: %v", orbitData)
+
 		data = exampleData
 	}
 	if err := json.Unmarshal(data, &s.savedContents); err != nil {
@@ -66,6 +80,7 @@ func main() {
 	contentpb.RegisterNexivilServer(grpcServer, newServer())
 	log.Printf("server listening at %v", lis.Addr())
 	grpcServer.Serve(lis)
+
 }
 
 // exampleData is a copy of testdata/route_guide_db.json. It's to avoid
