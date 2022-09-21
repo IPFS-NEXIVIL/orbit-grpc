@@ -223,7 +223,7 @@ func (db *Database) Disconnect() {
 }
 
 func (db *Database) SubmitData(data *models.Data) error {
-	entity, err := structToMap(*data)
+	entity, err := StructToMap(*data)
 	if err != nil {
 		return err
 	}

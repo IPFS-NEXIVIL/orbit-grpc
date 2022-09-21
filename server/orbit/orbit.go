@@ -13,7 +13,7 @@ import (
 	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit/cache"
 	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit/config"
 	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit/database"
-	"github.com/google/uuid"
+	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit/models"
 	"go.uber.org/zap"
 )
 
@@ -107,14 +107,25 @@ func StartOrbitDB() *database.Database {
 					log.Println(docs)
 				}
 			case "p":
-				id, _ := uuid.NewUUID()
-				log.Print(id.String())
-				_, err = db.Store.Put(ctx, map[string]interface{}{"id": id.String(), "hello": "world"})
+
+				// new data create
+				newData := models.NewData()
+				log.Println(newData)
+
+				newData.Content = "content"
+				newData.Project = "project"
+				entity, err := database.StructToMap(*newData)
+				if err != nil {
+					log.Println(err)
+				}
+
+				entity["type"] = "data"
+				_, err = db.Store.Put(ctx, entity)
 				if err != nil {
 					log.Println(err)
 					log.Println("Error")
 				} else {
-					log.Println(id)
+					log.Println("Success")
 				}
 			case "l":
 				docs, err := db.Store.Query(ctx, func(e interface{}) (bool, error) {

@@ -73,7 +73,7 @@ func createNode(ctx context.Context, repoPath string) (*core.IpfsNode, icore.Cor
 // 	return f, nil
 // }
 
-func structToMap(v interface{}) (map[string]interface{}, error) {
+func StructToMap(v interface{}) (map[string]interface{}, error) {
 	vMap := &map[string]interface{}{}
 
 	err := mapstructure.Decode(v, &vMap)
