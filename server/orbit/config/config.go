@@ -53,9 +53,11 @@ type Config struct {
 
 func LoadConfig() (*Config, error) {
 	configDir, err := os.Getwd()
+	configDir = fmt.Sprintf("%s/orbit", configDir)
 	if err != nil {
 		return nil, err
 	}
+	log.Println("configDir", configDir)
 
 	configDir = filepath.Join(configDir, ".config")
 	os.MkdirAll(configDir, 0755)
@@ -164,17 +166,17 @@ func (cfg *Config) WasSetup() bool {
 func (cfg *Config) Setup() error {
 	fmt.Printf("\nNEXIVIL\n\nInitial Setup\n-------------\n\n")
 
-	log.Println("..")
-
 	defaultConnectionString := "/orbitdb/bafyreifdpagppa7ve45odxuvudz5snbzcybwyfer777huckl4li4zbc5k4/nexivil"
 	if cfg.ConnectionString != "" {
 		defaultConnectionString = cfg.ConnectionString
 	}
-	fmt.Printf("Database connection string [%s]: ", defaultConnectionString)
-	fmt.Scanln(&cfg.ConnectionString)
-	if strings.TrimSpace(cfg.ConnectionString) == "" {
-		cfg.ConnectionString = defaultConnectionString
-	}
+	cfg.ConnectionString = defaultConnectionString
+	// fmt.Printf("Database connection string [%s]: ", defaultConnectionString)
+	// fmt.Scanln(&cfg.ConnectionString)
+	// if strings.TrimSpace(cfg.ConnectionString) == "" {
+	// 	cfg.ConnectionString = defaultConnectionString
+	// }
+	fmt.Printf("Database connection string [%s] ", defaultConnectionString)
 
 	currentPath, err := os.Getwd()
 	if err != nil {
@@ -188,11 +190,12 @@ func (cfg *Config) Setup() error {
 	if cfg.CachePath != "" {
 		defaultDatabaseCachePath = cfg.CachePath
 	}
-	fmt.Printf("Database cache path [%s]: ", defaultDatabaseCachePath)
-	fmt.Scanln(&cfg.DatabaseCachePath)
-	if strings.TrimSpace(cfg.DatabaseCachePath) == "" {
-		cfg.DatabaseCachePath = defaultDatabaseCachePath
-	}
+	cfg.DatabaseCachePath = defaultDatabaseCachePath
+	fmt.Printf("Database cache path [%s] ", defaultDatabaseCachePath)
+	// fmt.Scanln(&cfg.DatabaseCachePath)
+	// if strings.TrimSpace(cfg.DatabaseCachePath) == "" {
+	// 	cfg.DatabaseCachePath = defaultDatabaseCachePath
+	// }
 	os.MkdirAll(filepath.Dir(cfg.DatabaseCachePath), 0755)
 
 	defaultProgramCachePath := filepath.Join(cacheDir, "nexivil", "program")
@@ -202,22 +205,24 @@ func (cfg *Config) Setup() error {
 		// OrbitDB, hence we need to find a different place
 		defaultProgramCachePath = filepath.Join(cacheDir, "nexivil.program")
 	}
-	fmt.Printf("Program cache path [%s]: ", defaultProgramCachePath)
-	fmt.Scanln(&cfg.ProgramCachePath)
-	if strings.TrimSpace(cfg.ProgramCachePath) == "" {
-		cfg.ProgramCachePath = defaultProgramCachePath
-	}
+	cfg.ProgramCachePath = defaultProgramCachePath
+	fmt.Printf("Program cache path [%s] ", defaultProgramCachePath)
+	// fmt.Scanln(&cfg.ProgramCachePath)
+	// if strings.TrimSpace(cfg.ProgramCachePath) == "" {
+	// 	cfg.ProgramCachePath = defaultProgramCachePath
+	// }
 	os.MkdirAll(filepath.Dir(cfg.ProgramCachePath), 0755)
 
 	defaultLogfile := filepath.Join(cacheDir, "nexivil.log")
 	if cfg.Logfile != "" {
 		defaultLogfile = cfg.Logfile
 	}
-	fmt.Printf("Logfile path [%s]: ", defaultLogfile)
-	fmt.Scanln(&cfg.Logfile)
-	if strings.TrimSpace(cfg.Logfile) == "" {
-		cfg.Logfile = defaultLogfile
-	}
+	cfg.Logfile = defaultLogfile
+	fmt.Printf("Logfile path [%s] ", defaultLogfile)
+	// fmt.Scanln(&cfg.Logfile)
+	// if strings.TrimSpace(cfg.Logfile) == "" {
+	// 	cfg.Logfile = defaultLogfile
+	// }
 
 	fmt.Printf("\nProfile information\n-------------------\n\n")
 
@@ -225,18 +230,19 @@ func (cfg *Config) Setup() error {
 	if cfg.Profile.From != "" {
 		defaultProfileFrom = cfg.Profile.From
 	}
-	fmt.Printf("From [%s]: ", defaultProfileFrom)
-	fmt.Scanln(&cfg.Profile.From)
-	if strings.TrimSpace(cfg.Profile.From) == "" {
-		cfg.Profile.From = defaultProfileFrom
-	}
+	cfg.Profile.From = defaultProfileFrom
+	fmt.Printf("From [%s]", defaultProfileFrom)
+	// fmt.Scanln(&cfg.Profile.From)
+	// if strings.TrimSpace(cfg.Profile.From) == "" {
+	// 	cfg.Profile.From = defaultProfileFrom
+	// }
 
 	defaultProfileOrganization := ""
 	if cfg.Profile.Organization != "" {
 		defaultProfileOrganization = cfg.Profile.Organization
 	}
-	fmt.Printf("Organization [%s]: ", defaultProfileOrganization)
-	fmt.Scanln(&cfg.Profile.Organization)
+	fmt.Printf("Organization [%s]", defaultProfileOrganization)
+	// fmt.Scanln(&cfg.Profile.Organization)
 
 	return cfg.Persist()
 }

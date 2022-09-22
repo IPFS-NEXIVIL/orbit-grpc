@@ -1,17 +1,29 @@
-FROM golang:1.18.6-alpine3.15
+FROM ubuntu:16.04
+
+RUN apt update
+RUN apt upgrade -y
+RUN apt-get install build-essential -y
+
+# Install go
+RUN apt install wget -y
+RUN wget https://dl.google.com/go/go1.18.6.linux-amd64.tar.gz
+RUN tar -xvf go1.18.6.linux-amd64.tar.gz 
+RUN mv go /usr/local 
+
+ENV GOROOT=/usr/local/go 
+ENV PATH=$GOROOT/bin:$PATH
+
+# Install IPFS
+RUN wget https://dist.ipfs.io/go-ipfs/v0.14.0/go-ipfs_v0.14.0_linux-amd64.tar.gz
+RUN tar -xzf go-ipfs_v0.14.0_linux-amd64.tar.gz
+RUN ./go-ipfs/ipfs init
+# RUN rm -rf ./go-ipfs
+# RUN rm ./go-ipfs_v0.4.21_linux-amd64.tar.gz 
 
 WORKDIR /app/
-ENV GO111MODULE=auto
-RUN apk --no-cache add --virtual build-deps
-# RUN apk update && apk add --no-cache protobuf-dev~=3.12.2-r0 protoc~=3.12.2-r0 bash~=5.0.17-r0 git~=2.26.2-r0 && rm /var/cache/apk/*
-
-# Install grpc
-# RUN go get -u -v github.com/golang/protobuf/proto
-# RUN go get -u -v github.com/golang/protobuf/protoc-gen-go
-# RUN go get -u -v google.golang.org/grpc
-
-ENV PATH=$PATH:$GOPATH/bin:/opt/protoc/bin
 
 COPY . .
 
-ENTRYPOINT [ "go", "run", "server.go" ]
+EXPOSE 8001
+
+ENTRYPOINT [ "go", "run", "grpc_server.go" ]

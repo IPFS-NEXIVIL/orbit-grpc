@@ -153,7 +153,7 @@ func NewDatabase(
 		return nil, err
 	}
 
-	// db.Logger.Debug("setting up plugins ...")
+	db.Logger.Debug("setting up plugins ...")
 	if err := setupPlugins(defaultPath); err != nil {
 		return nil, err
 	}
