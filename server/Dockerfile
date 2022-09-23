@@ -26,4 +26,6 @@ COPY . .
 
 EXPOSE 8001
 
-ENTRYPOINT [ "go", "run", "grpc_server.go" ]
+# ENTRYPOINT [ "go", "run", "grpc_server.go" ]
+ENTRYPOINT ["tail", "-f", "/dev/null"]
+# CMD ["/bin/sh", "-c", "'tail -F /var/log/zookeeper.log'"]
