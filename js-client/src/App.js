@@ -34,7 +34,7 @@ function App() {
     var stream = client.listContents(contentRequest,{});
   
     stream.on('data', function(response) {
-      console.log(response);
+      console.log(response.getContent());
       // const contentList = [];
       // contentList.push(response.getContent());
   

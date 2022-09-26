@@ -19,7 +19,7 @@ type DBInfo struct {
 // 	File *multipart.FileHeader `form:"file" binding:"required"`
 // }
 
-func (database DBInfo) saveAndGetDBData(content string, project string) models.Data {
+func (database DBInfo) SaveAndGetDBData(content string, project string) models.Data {
 	// our orbit db
 	db := database.DB
 

@@ -9,15 +9,16 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"runtime"
 	"time"
 
 	"berty.tech/go-orbit-db/iface"
 	"github.com/IPFS-NEXIVIL/orbit-grpc/server/contentpb"
+	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit"
 	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit/cache"
 	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit/config"
 	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit/database"
 	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit/models"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -29,10 +30,13 @@ var (
 type server struct {
 	contentpb.UnimplementedNexivilServer
 	savedContents []*contentpb.ContentResponse
+
+	DB *database.Database
 }
 
 // ListContents lists all contents contained within the given bounding project
 func (s *server) ListContents(req *contentpb.ContentRequest, stream contentpb.Nexivil_ListContentsServer) error {
+	s.loadContents("")
 	for _, content := range s.savedContents {
 		if content.ProjectName == req.ProjectName {
 			if err := stream.Send(content); err != nil {
@@ -44,7 +48,7 @@ func (s *server) ListContents(req *contentpb.ContentRequest, stream contentpb.Ne
 }
 
 // loadFeatures loads features from a JSON file.
-func (s *server) loadContents(db *database.Database, filePath string) {
+func (s *server) loadContents(filePath string) {
 	var data []byte
 	var dataa []*models.Data
 	if filePath != "" {
@@ -56,10 +60,10 @@ func (s *server) loadContents(db *database.Database, filePath string) {
 	} else {
 		// Initialize and start the orbit db
 
-		// example = exampleData
+		// data = exampleData
 
 		// get all data from orbit db
-		orbitData, err := db.ListData()
+		orbitData, err := s.DB.ListData()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -67,7 +71,9 @@ func (s *server) loadContents(db *database.Database, filePath string) {
 		log.Printf("orbit data: %v", orbitData)
 
 		dataa = orbitData
+		log.Println(dataa)
 		data, _ = json.Marshal(dataa)
+		log.Println(data)
 	}
 	if err := json.Unmarshal(data, &s.savedContents); err != nil {
 		log.Fatalf("Failed to load default contents: %v", err)
@@ -76,44 +82,29 @@ func (s *server) loadContents(db *database.Database, filePath string) {
 
 func newServer(db *database.Database) *server {
 	s := &server{}
-	s.loadContents(db, "")
+	s.DB = db
+	s.loadContents("")
 	return s
 }
 
 // Orbit Logger
 func NewLogger(filename string) (*zap.Logger, error) {
-	// if runtime.GOOS == "windows" {
-	// 	zap.RegisterSink("winfile", func(u *url.URL) (zap.Sink, error) {
-	// 		return os.OpenFile(u.Path[1:], os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
-	// 	})
-	// }
-
-	// cfg := zap.NewDevelopmentConfig()
-	// if runtime.GOOS == "windows" {
-	// 	cfg.OutputPaths = []string{
-	// 		"stdout",
-	// 		"winfile:///" + filename,
-	// 	}
-	// } else {
-	// 	cfg.OutputPaths = []string{
-	// 		filename,
-	// 	}
-	// }
-
-	// return cfg.Build()
-	zap.RegisterSink("winfile", func(u *url.URL) (zap.Sink, error) {
-
-		return os.OpenFile(u.Path[1:], os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
-
-	})
+	if runtime.GOOS == "windows" {
+		zap.RegisterSink("winfile", func(u *url.URL) (zap.Sink, error) {
+			return os.OpenFile(u.Path[1:], os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+		})
+	}
 
 	cfg := zap.NewDevelopmentConfig()
-
-	cfg.OutputPaths = []string{
-
-		"stdout",
-
-		"winfile:///" + filename,
+	if runtime.GOOS == "windows" {
+		cfg.OutputPaths = []string{
+			"stdout",
+			"winfile:///" + filename,
+		}
+	} else {
+		cfg.OutputPaths = []string{
+			filename,
+		}
 	}
 
 	return cfg.Build()
@@ -192,14 +183,15 @@ func main() {
 			case "p":
 				fmt.Scanln(&project)
 				fmt.Scanln(&content)
-				id, _ := uuid.NewUUID()
-				_, err = db.Store.Put(ctx, map[string]interface{}{"id": id.String(), "project": project, "content": content})
-				if err != nil {
-					log.Println(err)
-					log.Println("Error")
-				} else {
-					log.Println(id)
+
+				database := orbit.DBInfo{
+					DB: db,
 				}
+
+				data := database.SaveAndGetDBData(content, project)
+
+				log.Printf("%s data %s save to orbit db success", data.Project, data.Content)
+
 			case "l":
 				docs, err := db.Store.Query(ctx, func(e interface{}) (bool, error) {
 					return true, nil
@@ -224,11 +216,10 @@ func main() {
 	contentpb.RegisterNexivilServer(grpcServer, newServer(db))
 	log.Printf("server listening at %v", lis.Addr())
 	grpcServer.Serve(lis)
-
 }
 
-// // exampleData is a copy of testdata/route_guide_db.json. It's to avoid
-// // specifying file path with `go run`.
+// exampleData is a copy of testdata/route_guide_db.json. It's to avoid
+// specifying file path with `go run`.
 // var exampleData = []byte(`[
 // 	{
 // 	  "id": "0a9dd1e1-e566-4a9d-9841-9384b34dd04f",
