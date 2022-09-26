@@ -36,15 +36,16 @@ type server struct {
 
 // ListContents lists all contents contained within the given bounding project
 func (s *server) ListContents(req *contentpb.ContentRequest, stream contentpb.Nexivil_ListContentsServer) error {
-	s.loadContents("")
-	for _, content := range s.savedContents {
-		if content.ProjectName == req.ProjectName {
+	for {
+		time.Sleep(time.Second * 5)
+
+		s.loadContents("")
+		for _, content := range s.savedContents {
 			if err := stream.Send(content); err != nil {
 				return err
 			}
 		}
 	}
-	return nil
 }
 
 // loadFeatures loads features from a JSON file.
@@ -71,9 +72,7 @@ func (s *server) loadContents(filePath string) {
 		log.Printf("orbit data: %v", orbitData)
 
 		dataa = orbitData
-		log.Println(dataa)
 		data, _ = json.Marshal(dataa)
-		log.Println(data)
 	}
 	if err := json.Unmarshal(data, &s.savedContents); err != nil {
 		log.Fatalf("Failed to load default contents: %v", err)
