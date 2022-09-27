@@ -32,27 +32,29 @@ type server struct {
 }
 
 func (s *server) NexivilContent(req *contentpb.ContentRequest, stream contentpb.Nexivil_NexivilContentServer) error {
-	for {
-		time.Sleep(time.Second * 5)
+	// Stream data none when there is no hot data
+	if s.hotDataId != "" {
+		for {
+			time.Sleep(time.Second * 5)
 
-		orbitData, err := s.DB.GetDataByID(s.hotDataId)
-		if err != nil {
-			log.Println("Failed to get Orbit Data", err)
+			orbitData, err := s.DB.GetDataByID(s.hotDataId)
+			if err != nil {
+				log.Println("Failed to get Orbit Data", err)
+			}
+
+			id := orbitData.ID
+			date := orbitData.Date
+			strDate := time.Unix(0, date*int64(time.Millisecond)).Format("2006-01-02 15:04:05")
+			projectName := orbitData.Project
+			content := orbitData.Content
+
+			err = stream.Send(&contentpb.ContentResponse{Id: id, Date: strDate, ProjectName: projectName, Content: content})
+			if err != nil {
+				log.Println("Error sending metric message ", err)
+			}
 		}
-
-		log.Println(s.hotDataId)
-		log.Println(orbitData)
-
-		id := orbitData.ID
-		date := orbitData.Date
-		strDate := time.Unix(0, date*int64(time.Millisecond)).Format("2006-01-02 15:04:05")
-		projectName := orbitData.Project
-		content := orbitData.Content
-
-		err = stream.Send(&contentpb.ContentResponse{Id: id, Date: strDate, ProjectName: projectName, Content: content})
-		if err != nil {
-			log.Println("Error sending metric message ", err)
-		}
+	} else {
+		return nil
 	}
 }
 
