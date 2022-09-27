@@ -33,10 +33,18 @@ type server struct {
 
 func (s *server) NexivilContent(req *contentpb.ContentRequest, stream contentpb.Nexivil_NexivilContentServer) error {
 	// Stream data none when there is no hot data
-	if s.hotDataId != "" {
-		for {
-			time.Sleep(time.Second * 5)
+	for {
+		time.Sleep(time.Second * 5)
 
+		switch {
+
+		case s.hotDataId == "":
+			err := stream.Send(&contentpb.ContentResponse{Id: "None", Date: "None", ProjectName: "None", Content: "None"})
+			if err != nil {
+				log.Println("Error sending metric message ", err)
+			}
+
+		case s.hotDataId != "":
 			orbitData, err := s.DB.GetDataByID(s.hotDataId)
 			if err != nil {
 				log.Println("Failed to get Orbit Data", err)
@@ -53,8 +61,6 @@ func (s *server) NexivilContent(req *contentpb.ContentRequest, stream contentpb.
 				log.Println("Error sending metric message ", err)
 			}
 		}
-	} else {
-		return nil
 	}
 }
 
