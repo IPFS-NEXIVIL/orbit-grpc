@@ -8,13 +8,13 @@ import (
 )
 
 type Data struct {
-	ID          string `mapstructure:"id" json:"-" validate:"uuid_rfc4122"`
-	InReplyToID string `mapstructure:"in-reply-to-id" json:"-" validate:"omitempty,uuid_rfc4122"`
-	Project     string
+	ID          string  `mapstructure:"id" json:"-" validate:"uuid_rfc4122"`
+	InReplyToID string  `mapstructure:"in-reply-to-id" json:"-" validate:"omitempty,uuid_rfc4122"`
+	Project     string  `mapstructure:"project" json:"-" validate:"required,string"`
 	Replies     []*Data `mapstructure:"-" json:"-" validate:"-"`
 	LatestReply int64   `mapstructure:"-" json:"-" validate:"-"`
 	Date        int64   `mapstructure:"date" json:"-" validate:"required,number"`
-	Content     string  `form:"content" binding:"required"`
+	Content     string  `mapstructure:"content" json:"-" validate:"required,string"`
 }
 
 func NewData() *Data {

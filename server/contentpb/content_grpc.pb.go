@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NexivilClient interface {
-	ListContents(ctx context.Context, in *ContentRequest, opts ...grpc.CallOption) (Nexivil_ListContentsClient, error)
+	NexivilContent(ctx context.Context, in *ContentRequest, opts ...grpc.CallOption) (Nexivil_NexivilContentClient, error)
 }
 
 type nexivilClient struct {
@@ -33,12 +33,12 @@ func NewNexivilClient(cc grpc.ClientConnInterface) NexivilClient {
 	return &nexivilClient{cc}
 }
 
-func (c *nexivilClient) ListContents(ctx context.Context, in *ContentRequest, opts ...grpc.CallOption) (Nexivil_ListContentsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Nexivil_ServiceDesc.Streams[0], "/contents.Nexivil/ListContents", opts...)
+func (c *nexivilClient) NexivilContent(ctx context.Context, in *ContentRequest, opts ...grpc.CallOption) (Nexivil_NexivilContentClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Nexivil_ServiceDesc.Streams[0], "/contents.Nexivil/NexivilContent", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &nexivilListContentsClient{stream}
+	x := &nexivilNexivilContentClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -48,16 +48,16 @@ func (c *nexivilClient) ListContents(ctx context.Context, in *ContentRequest, op
 	return x, nil
 }
 
-type Nexivil_ListContentsClient interface {
+type Nexivil_NexivilContentClient interface {
 	Recv() (*ContentResponse, error)
 	grpc.ClientStream
 }
 
-type nexivilListContentsClient struct {
+type nexivilNexivilContentClient struct {
 	grpc.ClientStream
 }
 
-func (x *nexivilListContentsClient) Recv() (*ContentResponse, error) {
+func (x *nexivilNexivilContentClient) Recv() (*ContentResponse, error) {
 	m := new(ContentResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func (x *nexivilListContentsClient) Recv() (*ContentResponse, error) {
 // All implementations must embed UnimplementedNexivilServer
 // for forward compatibility
 type NexivilServer interface {
-	ListContents(*ContentRequest, Nexivil_ListContentsServer) error
+	NexivilContent(*ContentRequest, Nexivil_NexivilContentServer) error
 	mustEmbedUnimplementedNexivilServer()
 }
 
@@ -77,8 +77,8 @@ type NexivilServer interface {
 type UnimplementedNexivilServer struct {
 }
 
-func (UnimplementedNexivilServer) ListContents(*ContentRequest, Nexivil_ListContentsServer) error {
-	return status.Errorf(codes.Unimplemented, "method ListContents not implemented")
+func (UnimplementedNexivilServer) NexivilContent(*ContentRequest, Nexivil_NexivilContentServer) error {
+	return status.Errorf(codes.Unimplemented, "method NexivilContent not implemented")
 }
 func (UnimplementedNexivilServer) mustEmbedUnimplementedNexivilServer() {}
 
@@ -93,24 +93,24 @@ func RegisterNexivilServer(s grpc.ServiceRegistrar, srv NexivilServer) {
 	s.RegisterService(&Nexivil_ServiceDesc, srv)
 }
 
-func _Nexivil_ListContents_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Nexivil_NexivilContent_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ContentRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(NexivilServer).ListContents(m, &nexivilListContentsServer{stream})
+	return srv.(NexivilServer).NexivilContent(m, &nexivilNexivilContentServer{stream})
 }
 
-type Nexivil_ListContentsServer interface {
+type Nexivil_NexivilContentServer interface {
 	Send(*ContentResponse) error
 	grpc.ServerStream
 }
 
-type nexivilListContentsServer struct {
+type nexivilNexivilContentServer struct {
 	grpc.ServerStream
 }
 
-func (x *nexivilListContentsServer) Send(m *ContentResponse) error {
+func (x *nexivilNexivilContentServer) Send(m *ContentResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -123,8 +123,8 @@ var Nexivil_ServiceDesc = grpc.ServiceDesc{
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "ListContents",
-			Handler:       _Nexivil_ListContents_Handler,
+			StreamName:    "NexivilContent",
+			Handler:       _Nexivil_NexivilContent_Handler,
 			ServerStreams: true,
 		},
 	},

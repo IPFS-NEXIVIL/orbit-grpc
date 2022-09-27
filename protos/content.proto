@@ -5,7 +5,7 @@ package contents;
 option go_package = "go_package/contentpb";
 
 service Nexivil{
-    rpc ListContents (ContentRequest) returns (stream ContentResponse) {};
+    rpc NexivilContent (ContentRequest) returns (stream ContentResponse) {};
 }
 
 message ContentRequest {

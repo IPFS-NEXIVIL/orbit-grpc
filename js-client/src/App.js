@@ -5,69 +5,42 @@ import { NexivilClient } from "./contentpb/content_grpc_web_pb"
 
 var client = new NexivilClient('http://localhost:8000')
 
-function ChangeProject(props) {
-  return (
-    <div>
-      <h3>🚀 Change Project</h3>
-      <form onSubmit={event=>{
-        event.preventDefault();
-        const project = event.target.project.value;
-        console.log(project);
-        props.onChange(project);
-      }}>
-        <p><input type="text" name="project" placeholder="project name"/></p>
-        <p><input type="submit" value="🗳"></input></p>
-      </form>
-    </div>
-  )
-}
-
 function App() {
 
   const [projectName, setProjectName] = useState("");
-  const [contents, setContents] = useState([]);
+  const [content, setContent] = useState("");
 
-  const GetNexivilContent = () => {
+  const getNexivilContent = () => {
   
     var contentRequest = new ContentRequest();
-    contentRequest.setProjectName(projectName);
-    var stream = client.listContents(contentRequest,{});
+    // contentRequest.setProjectName(projectName);
+    var stream = client.nexivilContent(contentRequest,{});
   
     stream.on('data', function(response) {
-      console.log(response.getContent());
-      // const contentList = [];
-      // contentList.push(response.getContent());
-  
-      setContents(c=>[...c, response.getContent()]);
-    });
-  
-    console.log("🌈");
+      console.log("🌈");
 
-    return () => {
-    };
+      console.log(response.getContent());
+      console.log(response.getProjectName());
+  
+      setContent(response.getContent());
+      setProjectName(response.getProjectName());
+    });
 
   };
 
   useEffect(()=>{
-    GetNexivilContent()
+    getNexivilContent()
   },[]);
 
   return (
     <div className="content-cont">
       <div className="content">
         <h1>Nexivil Content</h1>
-        <ChangeProject onChange={(project)=>{
-          const newProject = project;
-          setProjectName(newProject);
-        }}></ChangeProject>
       </div>
 
       <div>
-        {contents.map((content, idx) =>
-          <div key={idx}>
-            <span>{content}</span>
-          </div>
-        )}
+        <h2> project name: {projectName} </h2>
+        <h2> content: {content} </h2>
       </div>
       
     </div>

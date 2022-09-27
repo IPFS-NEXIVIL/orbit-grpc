@@ -76,8 +76,8 @@ proto.contents.NexivilPromiseClient =
  *   !proto.contents.ContentRequest,
  *   !proto.contents.ContentResponse>}
  */
-const methodDescriptor_Nexivil_ListContents = new grpc.web.MethodDescriptor(
-  '/contents.Nexivil/ListContents',
+const methodDescriptor_Nexivil_NexivilContent = new grpc.web.MethodDescriptor(
+  '/contents.Nexivil/NexivilContent',
   grpc.web.MethodType.SERVER_STREAMING,
   proto.contents.ContentRequest,
   proto.contents.ContentResponse,
@@ -99,13 +99,13 @@ const methodDescriptor_Nexivil_ListContents = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.contents.ContentResponse>}
  *     The XHR Node Readable Stream
  */
-proto.contents.NexivilClient.prototype.listContents =
+proto.contents.NexivilClient.prototype.nexivilContent =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/contents.Nexivil/ListContents',
+      '/contents.Nexivil/NexivilContent',
       request,
       metadata || {},
-      methodDescriptor_Nexivil_ListContents);
+      methodDescriptor_Nexivil_NexivilContent);
 };
 
 
@@ -116,13 +116,13 @@ proto.contents.NexivilClient.prototype.listContents =
  * @return {!grpc.web.ClientReadableStream<!proto.contents.ContentResponse>}
  *     The XHR Node Readable Stream
  */
-proto.contents.NexivilPromiseClient.prototype.listContents =
+proto.contents.NexivilPromiseClient.prototype.nexivilContent =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/contents.Nexivil/ListContents',
+      '/contents.Nexivil/NexivilContent',
       request,
       metadata || {},
-      methodDescriptor_Nexivil_ListContents);
+      methodDescriptor_Nexivil_NexivilContent);
 };
 
 
