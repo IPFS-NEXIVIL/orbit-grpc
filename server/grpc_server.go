@@ -32,12 +32,12 @@ type server struct {
 }
 
 func (s *server) NexivilContent(req *contentpb.ContentRequest, stream contentpb.Nexivil_NexivilContentServer) error {
-	// Stream data none when there is no hot data
 	for {
 		time.Sleep(time.Second * 5)
 
 		switch {
 
+		// Stream data none when there is no hot data
 		case s.hotDataId == "":
 			err := stream.Send(&contentpb.ContentResponse{Id: "None", Date: "None", ProjectName: "None", Content: "None"})
 			if err != nil {
@@ -175,6 +175,7 @@ func main() {
 	// server
 	var nexServer *server
 
+	// Communicate with Orbit DB through command input to cli
 	go func() {
 		var input string
 		var project string
@@ -185,6 +186,7 @@ func main() {
 			switch input {
 			case "q":
 				return
+			// Load specific data with id
 			case "g":
 				fmt.Scanln(&input)
 				docs, err := db.Store.Get(ctx, input, &iface.DocumentStoreGetOptions{CaseInsensitive: false})
@@ -194,6 +196,7 @@ func main() {
 				} else {
 					log.Println(docs)
 				}
+			// Putting data
 			case "p":
 				fmt.Scanln(&project)
 				fmt.Scanln(&content)
@@ -208,6 +211,7 @@ func main() {
 
 				nexServer.hotDataId = data.ID
 
+			// Load all data
 			case "l":
 				docs, err := db.Store.Query(ctx, func(e interface{}) (bool, error) {
 					return true, nil

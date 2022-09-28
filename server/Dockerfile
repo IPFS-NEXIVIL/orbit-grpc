@@ -17,8 +17,6 @@ ENV PATH=$GOROOT/bin:$PATH
 RUN wget https://dist.ipfs.io/go-ipfs/v0.14.0/go-ipfs_v0.14.0_linux-amd64.tar.gz
 RUN tar -xzf go-ipfs_v0.14.0_linux-amd64.tar.gz
 RUN ./go-ipfs/ipfs init
-# RUN rm -rf ./go-ipfs
-# RUN rm ./go-ipfs_v0.4.21_linux-amd64.tar.gz 
 
 WORKDIR /app/
 
@@ -26,6 +24,4 @@ COPY . .
 
 EXPOSE 8001
 
-# ENTRYPOINT [ "go", "run", "grpc_server.go" ]
 ENTRYPOINT ["tail", "-f", "/dev/null"]
-# CMD ["/bin/sh", "-c", "'tail -F /var/log/zookeeper.log'"]
