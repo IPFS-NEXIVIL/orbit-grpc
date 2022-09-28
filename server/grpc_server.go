@@ -99,6 +99,7 @@ func newServer(db *database.Database) *server {
 }
 
 // Orbit Logger
+// If an error occurs: Check your folder [.config] (Path within [.toml])
 func NewLogger(filename string) (*zap.Logger, error) {
 	if runtime.GOOS == "windows" {
 		zap.RegisterSink("winfile", func(u *url.URL) (zap.Sink, error) {
