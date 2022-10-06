@@ -130,7 +130,6 @@ func main() {
 	if err != nil {
 		log.Panicln(err)
 	}
-	log.Println(cfg.WasSetup())
 	if !cfg.WasSetup() {
 		cfg.Setup()
 	}
@@ -164,7 +163,7 @@ func main() {
 
 	go func() {
 		for {
-			_, err := db.IPFSCoreAPI.Swarm().Peers(context.Background())
+			_, err := db.IPFSCoreAPIs[0].Swarm().Peers(context.Background())
 			if err != nil {
 				log.Panicln(err)
 			}
@@ -189,7 +188,7 @@ func main() {
 			// Load specific data with id
 			case "g":
 				fmt.Scanln(&input)
-				docs, err := db.Store.Get(ctx, input, &iface.DocumentStoreGetOptions{CaseInsensitive: false})
+				docs, err := db.DocStores[0].Get(ctx, input, &iface.DocumentStoreGetOptions{CaseInsensitive: false})
 				if err != nil {
 
 					log.Println(err)
@@ -213,7 +212,7 @@ func main() {
 
 			// Load all data
 			case "l":
-				docs, err := db.Store.Query(ctx, func(e interface{}) (bool, error) {
+				docs, err := db.DocStores[0].Query(ctx, func(e interface{}) (bool, error) {
 					return true, nil
 				})
 				if err != nil {
@@ -225,6 +224,10 @@ func main() {
 
 		}
 	}()
+
+	status := db.DocStores[0].ReplicationStatus()
+	log.Println(status.GetProgress())
+	log.Println(status.GetMax())
 
 	addr := fmt.Sprintf(":%d", port)
 	lis, err := net.Listen("tcp", addr)

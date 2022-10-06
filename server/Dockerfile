@@ -16,7 +16,8 @@ ENV PATH=$GOROOT/bin:$PATH
 # Install IPFS
 RUN wget https://dist.ipfs.io/go-ipfs/v0.14.0/go-ipfs_v0.14.0_linux-amd64.tar.gz
 RUN tar -xzf go-ipfs_v0.14.0_linux-amd64.tar.gz
-RUN ./go-ipfs/ipfs init
+RUN cd ./go-ipfs && ./install.sh
+RUN ipfs init
 
 WORKDIR /app/
 
