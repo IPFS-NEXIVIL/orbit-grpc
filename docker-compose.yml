@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
 
-  master_server:
+  server:
     build:
       context: ./server
       dockerfile: Dockerfile
@@ -23,6 +23,6 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - master_server
+      - server
       - proxy
     tty: true

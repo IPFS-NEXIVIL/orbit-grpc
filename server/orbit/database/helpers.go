@@ -7,12 +7,10 @@ import (
 
 	"github.com/ipfs/go-ipfs/core"
 	"github.com/ipfs/go-ipfs/core/coreapi"
-	mock "github.com/ipfs/go-ipfs/core/mock"
 	"github.com/ipfs/go-ipfs/core/node/libp2p"
 	"github.com/ipfs/go-ipfs/plugin/loader"
 	"github.com/ipfs/go-ipfs/repo/fsrepo"
 	icore "github.com/ipfs/interface-go-ipfs-core"
-	mocknet "github.com/libp2p/go-libp2p/p2p/net/mock"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -33,7 +31,7 @@ func setupPlugins(path string) error {
 	return nil
 }
 
-func createNode(ctx context.Context, repoPath string, m mocknet.Mocknet) (*core.IpfsNode, icore.CoreAPI, error) {
+func createNode(ctx context.Context, repoPath string) (*core.IpfsNode, icore.CoreAPI, error) {
 	repo, err := fsrepo.Open(repoPath)
 	if err != nil {
 		return nil, nil, err
@@ -43,7 +41,6 @@ func createNode(ctx context.Context, repoPath string, m mocknet.Mocknet) (*core.
 		Online:  true,
 		Routing: libp2p.DHTClientOption, // DHTOption
 		Repo:    repo,
-		Host:    mock.MockHostOption(m),
 		ExtraOpts: map[string]bool{
 			"pubsub": true,
 		},

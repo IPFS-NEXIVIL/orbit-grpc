@@ -2,8 +2,8 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"sort"
 	"sync"
 	"time"
 
@@ -18,8 +18,6 @@ import (
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/event"
 	"github.com/libp2p/go-libp2p-core/peer"
-	mocknet "github.com/libp2p/go-libp2p/p2p/net/mock"
-
 	"github.com/mitchellh/mapstructure"
 	"go.uber.org/zap"
 
@@ -36,13 +34,12 @@ type Database struct {
 
 	Logger *zap.Logger
 
-	IPFSNodes    []*core.IpfsNode
-	IPFSCoreAPIs []icore.CoreAPI
+	IPFSNode    *core.IpfsNode
+	IPFSCoreAPI icore.CoreAPI
 
-	OrbitDBs    []orbitdb.OrbitDB
-	DocStores   []orbitdb.DocumentStore
-	EventStores []orbitdb.EventLogStore
-	Events      event.Subscription
+	OrbitDB orbitdb.OrbitDB
+	Store   orbitdb.DocumentStore
+	Events  event.Subscription
 }
 
 func (db *Database) init() error {
@@ -50,30 +47,17 @@ func (db *Database) init() error {
 
 	ctx := context.Background()
 
-	dbPath1 := db.CachePath + "1"
-	dbPath2 := db.CachePath + "2"
-
 	log.Println("initializing NewOrbitDB ...")
 	db.Logger.Debug("initializing NewOrbitDB ...")
-	orbit1, err := orbitdb.NewOrbitDB(ctx, db.IPFSCoreAPIs[0], &orbitdb.NewOrbitDBOptions{
-		Directory: &dbPath1,
+	db.OrbitDB, err = orbitdb.NewOrbitDB(ctx, db.IPFSCoreAPI, &orbitdb.NewOrbitDBOptions{
+		Directory: &db.CachePath,
 		Logger:    db.Logger,
 	})
 	if err != nil {
 		return err
 	}
 
-	orbit2, err := orbitdb.NewOrbitDB(ctx, db.IPFSCoreAPIs[1], &orbitdb.NewOrbitDBOptions{
-		Directory: &dbPath2,
-		Logger:    db.Logger,
-	})
-	if err != nil {
-		return err
-	}
-
-	db.OrbitDBs = []orbitdb.OrbitDB{orbit1, orbit2}
-
-	access := &accesscontroller.CreateAccessControllerOptions{
+	ac := &accesscontroller.CreateAccessControllerOptions{
 		Access: map[string][]string{
 			"write": {
 				"*",
@@ -83,83 +67,24 @@ func (db *Database) init() error {
 
 	address := "nexivil"
 
-	var replication = true
-
 	storetype := "docstore"
 	log.Println("initializing OrbitDB.Docs ...")
 	db.Logger.Debug("initializing OrbitDB.Docs ...")
-	docstore1, err := db.OrbitDBs[0].Docs(ctx, address, &orbitdb.CreateDBOptions{
-		AccessController:  access,
+	db.Store, err = db.OrbitDB.Docs(ctx, address, &orbitdb.CreateDBOptions{
+		AccessController:  ac,
 		StoreType:         &storetype,
 		StoreSpecificOpts: documentstore.DefaultStoreOptsForMap("id"),
 		Timeout:           time.Second * 600,
-		Replicate:         &replication,
 	})
 	if err != nil {
 		log.Fatalf("%s, %s", err, db.CachePath)
 	}
 
-	db.DocStores = []orbitdb.DocumentStore{docstore1}
-
-	// Replica of main database (DocStore[0])
-	docstore2, err := db.OrbitDBs[1].Docs(ctx, db.DocStores[0].Address().String(), &orbitdb.CreateDBOptions{
-		AccessController:  access,
-		StoreType:         &storetype,
-		StoreSpecificOpts: documentstore.DefaultStoreOptsForMap("id"),
-		Timeout:           time.Second * 600,
-		Replicate:         &replication,
-	})
-	if err != nil {
-		log.Fatalf("%s, %s", err, db.CachePath)
-	}
-
-	db.DocStores = append(db.DocStores, docstore2)
-
-	log.Printf("main orbit db docstore: %s", db.DocStores[0].Address().String())
-	log.Printf("replication 1 of main orbit db docstore: %s", db.DocStores[1].Address().String())
-
-	eventstore1, err := db.OrbitDBs[0].Log(ctx, "replicate-automatically", &orbitdb.CreateDBOptions{
-		Directory:        &dbPath1,
-		AccessController: access,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db.EventStores = []orbitdb.EventLogStore{eventstore1}
-
-	// Replica of main EventStore database (EventStore[0])
-	eventstore2, err := db.OrbitDBs[0].Log(ctx, db.EventStores[0].Address().String(), &orbitdb.CreateDBOptions{
-		Directory:        &dbPath1,
-		AccessController: access,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db.EventStores = append(db.EventStores, eventstore2)
-
-	// add message to log
-	for i := 0; i < 10; i++ {
-		_, err := db.EventStores[0].Add(ctx, []byte(fmt.Sprintf("hello%d", i)))
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	log.Printf("%s", db.Store.Address().String())
 
 	log.Println("subscribing to EventBus ...")
 	db.Logger.Debug("subscribing to EventBus ...")
-	db.Events, err = db.DocStores[0].EventBus().Subscribe(new(stores.EventReady))
-	if err != nil {
-		return nil
-	}
-
-	db.Events, err = db.DocStores[0].EventBus().Subscribe(new(stores.EventReplicated))
-	if err != nil {
-		return nil
-	}
-
-	db.Events, err = db.DocStores[1].EventBus().Subscribe(new(stores.EventReady))
+	db.Events, err = db.Store.EventBus().Subscribe(new(stores.EventReady))
 	if err != nil {
 		return nil
 	}
@@ -168,11 +93,11 @@ func (db *Database) init() error {
 }
 
 func (db *Database) GetOwnID() string {
-	return db.OrbitDBs[0].Identity().ID
+	return db.OrbitDB.Identity().ID
 }
 
 func (db *Database) GetOwnPubKey() crypto.PubKey {
-	pubKey, err := db.OrbitDBs[0].Identity().GetPublicKey()
+	pubKey, err := db.OrbitDB.Identity().GetPublicKey()
 	if err != nil {
 		return nil
 	}
@@ -192,7 +117,7 @@ func (db *Database) connectToPeers() error {
 	for _, peerInfo := range peerInfos {
 		go func(peerInfo *peer.AddrInfo) {
 			defer wg.Done()
-			err := db.IPFSCoreAPIs[0].Swarm().Connect(db.ctx, *peerInfo)
+			err := db.IPFSCoreAPI.Swarm().Connect(db.ctx, *peerInfo)
 			if err != nil {
 				db.Logger.Error("failed to connect", zap.String("peerID", peerInfo.ID.String()), zap.Error(err))
 				log.Printf("failed to connect to %s: %s", peerInfo.ID, err)
@@ -233,30 +158,8 @@ func NewDatabase(
 		return nil, err
 	}
 
-	mocknet := mocknet.New(ctx)
-
-	// Create two IPFS nodes for data replication
 	db.Logger.Debug("creating IPFS node ...")
-
-	ipfsNode1, ipfsCoreAPI1, err := createNode(ctx, defaultPath, mocknet)
-	if err != nil {
-		return nil, err
-	}
-	ipfsNode2, ipfsCoreAPI2, err := createNode(ctx, defaultPath, mocknet)
-	if err != nil {
-		return nil, err
-	}
-
-	db.IPFSNodes = []*core.IpfsNode{ipfsNode1, ipfsNode2}
-	db.IPFSCoreAPIs = []icore.CoreAPI{ipfsCoreAPI1, ipfsCoreAPI2}
-
-	log.Println(db.IPFSNodes)
-	log.Println(db.IPFSCoreAPIs)
-
-	log.Printf("node1 is %s", db.IPFSNodes[0].Identity.String())
-	log.Printf("node2 is %s", db.IPFSNodes[1].Identity.String())
-
-	_, err = mocknet.LinkPeers(db.IPFSNodes[0].Identity, db.IPFSNodes[1].Identity)
+	db.IPFSNode, db.IPFSCoreAPI, err = createNode(ctx, defaultPath)
 	if err != nil {
 		return nil, err
 	}
@@ -293,7 +196,7 @@ func (db *Database) Connect(onReady func(address string)) error {
 				db.Logger.Debug("got event", zap.Any("event", ev))
 				switch ev.(type) {
 				case stores.EventReady:
-					db.URI = db.DocStores[0].Address().String()
+					db.URI = db.Store.Address().String()
 					onReady(db.URI)
 					continue
 				}
@@ -301,7 +204,7 @@ func (db *Database) Connect(onReady func(address string)) error {
 		}
 	}()
 
-	err = db.DocStores[0].Load(db.ctx, -1)
+	err = db.Store.Load(db.ctx, -1)
 	if err != nil {
 		db.Logger.Error("%s", zap.Error(err))
 		// TODO: clean up
@@ -315,8 +218,8 @@ func (db *Database) Connect(onReady func(address string)) error {
 
 func (db *Database) Disconnect() {
 	db.Events.Close()
-	db.DocStores[0].Close()
-	db.OrbitDBs[0].Close()
+	db.Store.Close()
+	db.OrbitDB.Close()
 }
 
 func (db *Database) SubmitData(data *models.Data) error {
@@ -326,12 +229,12 @@ func (db *Database) SubmitData(data *models.Data) error {
 	}
 	entity["type"] = "data"
 
-	_, err = db.DocStores[0].Put(db.ctx, entity)
+	_, err = db.Store.Put(db.ctx, entity)
 	return err
 }
 
 func (db *Database) GetDataByID(id string) (models.Data, error) {
-	entity, err := db.DocStores[0].Get(db.ctx, id, &iface.DocumentStoreGetOptions{CaseInsensitive: false})
+	entity, err := db.Store.Get(db.ctx, id, &iface.DocumentStoreGetOptions{CaseInsensitive: false})
 	if err != nil {
 		return models.Data{}, err
 	}
@@ -345,67 +248,67 @@ func (db *Database) GetDataByID(id string) (models.Data, error) {
 	return data, nil
 }
 
-// func (db *Database) ListData() ([]*models.Data, error) {
-// 	var data []*models.Data
-// 	var dataMap map[string]*models.Data
+func (db *Database) ListData() ([]*models.Data, error) {
+	var data []*models.Data
+	var dataMap map[string]*models.Data
 
-// 	dataMap = make(map[string]*models.Data)
+	dataMap = make(map[string]*models.Data)
 
-// 	_, err := db.Store.Query(db.ctx, func(e interface{}) (bool, error) {
-// 		entity := e.(map[string]interface{})
-// 		if entity["type"] == "data" {
-// 			var oneData models.Data
-// 			err := mapstructure.Decode(entity, &oneData)
-// 			if err == nil {
-// 				// TODO: Not sure why mapstructure won't convert this field and simply
-// 				//       leave it ""
-// 				if entity["in-reply-to-id"] != nil {
-// 					oneData.InReplyToID = entity["in-reply-to-id"].(string)
-// 				}
-// 				db.Cache.LoadData(&oneData)
-// 				data = append(data, &oneData)
-// 				dataMap[oneData.ID] = data[(len(data) - 1)]
-// 			}
-// 			return true, err
-// 		}
-// 		return false, nil
-// 	})
-// 	if err != nil {
-// 		return data, err
-// 	}
+	_, err := db.Store.Query(db.ctx, func(e interface{}) (bool, error) {
+		entity := e.(map[string]interface{})
+		if entity["type"] == "data" {
+			var oneData models.Data
+			err := mapstructure.Decode(entity, &oneData)
+			if err == nil {
+				// TODO: Not sure why mapstructure won't convert this field and simply
+				//       leave it ""
+				if entity["in-reply-to-id"] != nil {
+					oneData.InReplyToID = entity["in-reply-to-id"].(string)
+				}
+				db.Cache.LoadData(&oneData)
+				data = append(data, &oneData)
+				dataMap[oneData.ID] = data[(len(data) - 1)]
+			}
+			return true, err
+		}
+		return false, nil
+	})
+	if err != nil {
+		return data, err
+	}
 
-// 	sort.SliceStable(data, func(i, j int) bool {
-// 		return data[i].Date > data[j].Date
-// 	})
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[i].Date > data[j].Date
+	})
 
-// 	// var dataRoots []*models.Data
-// 	// for i := 0; i < len(data); i++ {
-// 	// 	if data[i].InReplyToID != "" {
-// 	// 		inReplyTo := data[i].InReplyToID
-// 	// 		if _, exist := dataMap[inReplyTo]; exist == true {
+	// var dataRoots []*models.Data
+	// for i := 0; i < len(data); i++ {
+	// 	if data[i].InReplyToID != "" {
+	// 		inReplyTo := data[i].InReplyToID
+	// 		if _, exist := dataMap[inReplyTo]; exist == true {
 
-// 	// 			(*dataMap[inReplyTo]).Replies =
-// 	// 				append((*dataMap[inReplyTo]).Replies, data[i])
-// 	// 			(*dataMap[inReplyTo]).LatestReply = data[i].Date
-// 	// 			continue
-// 	// 		}
-// 	// 	}
-// 	// 	dataRoots = append(dataRoots, data[i])
-// 	// }
+	// 			(*dataMap[inReplyTo]).Replies =
+	// 				append((*dataMap[inReplyTo]).Replies, data[i])
+	// 			(*dataMap[inReplyTo]).LatestReply = data[i].Date
+	// 			continue
+	// 		}
+	// 	}
+	// 	dataRoots = append(dataRoots, data[i])
+	// }
 
-// 	// sort.SliceStable(dataRoots, func(i, j int) bool {
-// 	// 	iLatest := dataRoots[i].LatestReply
-// 	// 	if iLatest <= 0 {
-// 	// 		iLatest = dataRoots[i].Date
-// 	// 	}
+	// sort.SliceStable(dataRoots, func(i, j int) bool {
+	// 	iLatest := dataRoots[i].LatestReply
+	// 	if iLatest <= 0 {
+	// 		iLatest = dataRoots[i].Date
+	// 	}
 
-// 	// 	jLatest := dataRoots[j].LatestReply
-// 	// 	if jLatest <= 0 {
-// 	// 		jLatest = dataRoots[j].Date
-// 	// 	}
+	// 	jLatest := dataRoots[j].LatestReply
+	// 	if jLatest <= 0 {
+	// 		jLatest = dataRoots[j].Date
+	// 	}
 
-// 	// 	return iLatest > jLatest
-// 	// })
+	// 	return iLatest > jLatest
+	// })
 
-// 	return data, nil
-// }
+	return data, nil
+}
