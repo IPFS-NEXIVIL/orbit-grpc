@@ -16,6 +16,7 @@ import (
 	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit/cache"
 	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit/config"
 	"github.com/IPFS-NEXIVIL/orbit-grpc/server/orbit/database"
+	corepath "github.com/ipfs/interface-go-ipfs-core/path"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -161,6 +162,26 @@ func main() {
 	if err != nil {
 		log.Panicln(err)
 	}
+
+	// pin orbit db
+
+	path := corepath.IpfsPath(db.Store.Address().GetRoot())
+
+	db.IPFSCoreAPI.Pin().Add(ctx, path)
+
+	// Check Pin Status
+
+	pin := db.IPFSCoreAPI.Pin()
+
+	_, ok, err := pin.IsPinned(ctx, corepath.IpfsPath(db.Store.Address().GetRoot()))
+
+	if err != nil {
+
+		log.Panicln(err)
+
+	}
+
+	log.Println("Check Pin Status", ok)
 
 	go func() {
 		for {

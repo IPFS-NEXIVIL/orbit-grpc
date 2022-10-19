@@ -8,7 +8,7 @@ import (
 )
 
 type Data struct {
-	ID          string  `mapstructure:"id" json:"-" validate:"uuid_rfc4122"`
+	ID          string  `mapstructure:"_id" json:"-" validate:"uuid_rfc4122"`
 	InReplyToID string  `mapstructure:"in-reply-to-id" json:"-" validate:"omitempty,uuid_rfc4122"`
 	Project     string  `mapstructure:"project" json:"-" validate:"required,string"`
 	Replies     []*Data `mapstructure:"-" json:"-" validate:"-"`

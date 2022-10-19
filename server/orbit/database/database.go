@@ -73,7 +73,7 @@ func (db *Database) init() error {
 	db.Store, err = db.OrbitDB.Docs(ctx, address, &orbitdb.CreateDBOptions{
 		AccessController:  ac,
 		StoreType:         &storetype,
-		StoreSpecificOpts: documentstore.DefaultStoreOptsForMap("id"),
+		StoreSpecificOpts: documentstore.DefaultStoreOptsForMap("_id"),
 		Timeout:           time.Second * 600,
 	})
 	if err != nil {
@@ -233,8 +233,8 @@ func (db *Database) SubmitData(data *models.Data) error {
 	return err
 }
 
-func (db *Database) GetDataByID(id string) (models.Data, error) {
-	entity, err := db.Store.Get(db.ctx, id, &iface.DocumentStoreGetOptions{CaseInsensitive: false})
+func (db *Database) GetDataByID(_id string) (models.Data, error) {
+	entity, err := db.Store.Get(db.ctx, _id, &iface.DocumentStoreGetOptions{CaseInsensitive: false})
 	if err != nil {
 		return models.Data{}, err
 	}
